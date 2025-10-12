@@ -175,6 +175,35 @@
         let currentBatchSkip = 0;
 
 
+        async function obtenerClientesSospechosos() {
+            try {
+            const response = await fetch(`${API_BASE_URL}${API_CLIENTES}`);
+            if (!response.ok) {
+                throw new Error("Error al obtener los clientes sospechosos");
+            }
+            const data = await response.json();
+                mostrarClientesSospechosos(data);
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+
+        function mostrarClientesSospechosos(clientes) {
+        const tabla = document.getElementById('clientes-tbody');
+        tabla.innerHTML = '';
+
+        clientes.forEach(cliente => {
+                const fila = `
+                <tr>
+                    <td>${cliente.id_cliente}</td>
+                    <td>${cliente.nombre}</td>
+                    <td>${cliente.apellido}</td>
+                    <td>${cliente.sospechoso_por.join(', ')}</td>
+                </tr>`;
+                tabla.innerHTML += fila;
+            });
+        }
+
         /**
          * Función genérica para hacer fetch con reintentos y backoff exponencial.
          * @param {string} url - URL de la API.
@@ -427,10 +456,10 @@
             } else if (viewName === 'clientes') {
                 transaccionesView.style.display = 'none';
                 clientesView.style.display = 'block';
-                // Aquí podrías agregar la lógica para cargar la tabla de clientes en el futuro
-                // Por ahora, solo muestra el placeholder.
                 document.getElementById('pagination').innerHTML = '';
                 document.getElementById('pagination-info').textContent = 'Seleccione una opción.';
+                //cargo los clientes
+                obtenerClientesSospechosos();
             }
         }
 
