@@ -111,12 +111,31 @@
 
                 <!-- Contenedor de Vista de Clientes (Placeholder) -->
                 <div id="clientes-view" style="display: none;">
+                    <!-- Card para la Tabla de Clientes -->
                     <div class="card shadow-sm">
                         <div class="card-header bg-success text-white">
                             <i class="bi bi-people"></i> Clientes con Mayor Riesgo
                         </div>
                         <div class="card-body">
-                            <p class="text-muted">Aquí se mostrarán los datos de clientes anómalos. Implementa la lógica de detección y carga de clientes en el futuro.</p>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>ID Cliente</th>
+                                            <th>Conteo Transacciones</th>
+                                            <th>Monto Promedio</th>
+                                            <th>Monto Std</th>
+                                            <th>Monto Máximo</th>
+                                            <th>Monto Mínimo</th>
+                                            <th>Tiempo entre Transacciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="clientes-tbody">
+                                        <!-- Filas generadas por JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
                             <div class="alert alert-info" role="alert">
                                 **¡Próxima Función!** El contenido de la tabla de clientes se cargará dinámicamente al seleccionar esta opción.
                             </div>
@@ -135,6 +154,7 @@
         // **IMPORTANTE**: Reemplaza esta URL con la dirección real de tu API de Python
         const API_BASE_URL = 'http://127.0.0.1:8000/anomalias';
         const API_ENDPOINT = '/transacciones_sospechosas';
+        const API_CLIENTES = '/clientes_sospechosos';
 
         // LÍMITES
         // API_LIMIT: Límite que la API de Python espera procesar por lote (5000, según tu backend)
