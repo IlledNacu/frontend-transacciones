@@ -94,7 +94,15 @@
                         <i class="bi bi-graph-up"></i> Gráfico de transacciones sospechosas
                     </div>
                     <div class="card-body">
-                        <div id="grafico-transacciones" class="w-100"></div>
+                        <div id="grafico-transacciones2" class="w-100"></div>
+                    </div>
+                </div>
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <i class="bi bi-graph-up"></i> Gráfico de clientes sospechosos
+                    </div>
+                    <div class="card-body">
+                        <div id="grafico-clientes" class="w-100"></div>
                     </div>
                 </div>
             </main>
@@ -127,13 +135,14 @@
         }
 
         // Cargar gráfico al inicio
-        cargarGrafico();
+        cargarGraficoTransacciones2();
+        cargarGraficoClientes();
     }
 
     // Cargar al inicio
     cargarEstadisticas();
 
-    async function cargarGrafico() {
+    async function cargarGraficoTransacciones() {
         try {
             const response = await fetch('http://127.0.0.1:8000/anomalias/graficos/transacciones_sospechosas');
             if (!response.ok) throw new Error("Error al cargar gráfico");
@@ -157,6 +166,59 @@
         } catch (error) {
             console.error("No se pudo cargar el gráfico:", error);
             document.getElementById("grafico-transacciones").innerHTML = "<p class='text-danger'>Error al cargar gráfico</p>";
+        }
+    }
+      async function cargarGraficoTransacciones2() {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/anomalias/graficos/transacciones_boxplot');
+            if (!response.ok) throw new Error("Error al cargar gráfico");
+            
+            const html = await response.text();
+            const container = document.getElementById("grafico-transacciones2");
+            container.innerHTML = html;
+
+            // Ejecutar los scripts incluidos en el HTML devuelto
+            const scripts = container.getElementsByTagName("script");
+            for (let i = 0; i < scripts.length; i++) {
+                const script = document.createElement("script");
+                if (scripts[i].src) {
+                    script.src = scripts[i].src;
+                } else {
+                    script.text = scripts[i].innerHTML;
+                }
+                document.body.appendChild(script);
+            }
+
+        } catch (error) {
+            console.error("No se pudo cargar el gráfico:", error);
+            document.getElementById("grafico-transacciones2").innerHTML = "<p class='text-danger'>Error al cargar gráfico</p>";
+        }
+    }
+
+     async function cargarGraficoClientes() {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/anomalias/graficos/clientes_sospechosos');
+            if (!response.ok) throw new Error("Error al cargar gráfico");
+            
+            const html = await response.text();
+            const container = document.getElementById("grafico-clientes");
+            container.innerHTML = html;
+
+            // Ejecutar los scripts incluidos en el HTML devuelto
+            const scripts = container.getElementsByTagName("script");
+            for (let i = 0; i < scripts.length; i++) {
+                const script = document.createElement("script");
+                if (scripts[i].src) {
+                    script.src = scripts[i].src;
+                } else {
+                    script.text = scripts[i].innerHTML;
+                }
+                document.body.appendChild(script);
+            }
+
+        } catch (error) {
+            console.error("No se pudo cargar el gráfico:", error);
+            document.getElementById("grafico-clientes").innerHTML = "<p class='text-danger'>Error al cargar gráfico</p>";
         }
     }
     </script>
