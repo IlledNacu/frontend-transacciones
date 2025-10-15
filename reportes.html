@@ -121,14 +121,11 @@
                                 <table class="table table-hover align-middle">
                                     <thead class="table-light">
                                         <tr>
-                                            <th>#</th>
-                                            <th>ID Cliente</th>
-                                            <th>Conteo Transacciones</th>
-                                            <th>Monto Promedio</th>
-                                            <th>Monto Std</th>
-                                            <th>Monto Máximo</th>
-                                            <th>Monto Mínimo</th>
-                                            <th>Tiempo entre Transacciones</th>
+                                        <th>#</th>
+                                        <th>ID Cliente</th>
+                                        <th>Nombre del Cliente</th>
+                                        <th colspan="4" class="text-center">Características Anómalas (Calculadas en Backend)</th> 
+                                        <th>Sospechoso Por</th>
                                         </tr>
                                     </thead>
                                     <tbody id="clientes-tbody">
@@ -164,6 +161,7 @@
 
         // ESTADO GLOBAL
         let allSuspiciousTransactions = []; // Almacena todas las transacciones sospechosas recibidas
+        let allSuspiciousClients = []; // Almacena todos los clientes sospechosos recibidos
         let currentDisplayPage = 1;
 
         // **NOTA**: Este valor es simulado (Mock). Se recomienda modificar la API en Python
@@ -173,36 +171,6 @@
         
         // El lote actual de transacciones que estamos mostrando (ej: lote 1: skip=0, limit=5000)
         let currentBatchSkip = 0;
-
-
-        async function obtenerClientesSospechosos() {
-            try {
-            const response = await fetch(`${API_BASE_URL}${API_CLIENTES}`);
-            if (!response.ok) {
-                throw new Error("Error al obtener los clientes sospechosos");
-            }
-            const data = await response.json();
-                mostrarClientesSospechosos(data);
-            } catch (error) {
-                console.error("Error:", error);
-            }
-        }
-
-        function mostrarClientesSospechosos(clientes) {
-        const tabla = document.getElementById('clientes-tbody');
-        tabla.innerHTML = '';
-
-        clientes.forEach(cliente => {
-                const fila = `
-                <tr>
-                    <td>${cliente.id_cliente}</td>
-                    <td>${cliente.nombre}</td>
-                    <td>${cliente.apellido}</td>
-                    <td>${cliente.sospechoso_por.join(', ')}</td>
-                </tr>`;
-                tabla.innerHTML += fila;
-            });
-        }
 
         /**
          * Función genérica para hacer fetch con reintentos y backoff exponencial.
@@ -279,6 +247,33 @@
             renderPagination(totalSuspicious, totalDisplayPages);
         }
 
+        /**
+         * Llama a la API para obtener la lista de clientes sospechosos.
+         * El endpoint no utiliza paginación.
+         */
+        async function obtenerClientesSospechosos() {
+            // Usamos el endpoint que definiste: /clientes_sospechosos
+            const url = `${API_BASE_URL}${API_CLIENTES}`;
+    
+            const tbody = document.getElementById('clientes-tbody');
+            // Muestra el spinner de carga
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-secondary py-4"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Cargando clientes anómalos...</td></tr>`;
+    
+            // Oculta la alerta temporal
+            const alertEl = document.querySelector('#clientes-view .alert');
+            if (alertEl) alertEl.style.display = 'none'; 
+
+            try {
+                const suspiciousClients = await fetchWithBackoff(url);
+                // Almacenamos los datos en la variable global
+                allSuspiciousClients = suspiciousClients; 
+                renderClientesTable(allSuspiciousClients);
+            } catch (error) {
+                console.error("Error al obtener los clientes:", error);
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger fw-bold py-4">Error al cargar los datos de clientes. Revisa la consola para más detalles.</td></tr>`;
+            }
+        }
+
 
         /**
          * Renderiza las filas de la tabla con los datos de las transacciones.
@@ -322,6 +317,45 @@
             });
         }
 
+        /**
+         * Renderiza las filas de la tabla de Clientes Sospechosos,
+         * mostrando el ID, nombre y la lista de motivos.
+         * @param {Array<Object>} clients - Lista de clientes con {id_cliente, nombre, apellido, sospechoso_por}.
+         */
+        function renderClientesTable(clients) {
+            const tbody = document.getElementById('clientes-tbody');
+            tbody.innerHTML = '';
+    
+            if (clients.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-secondary py-4">No se encontraron clientes con anomalías.</td></tr>`;
+                return;
+            }
+
+            clients.forEach((c, index) => {
+                const absoluteIndex = index + 1;
+        
+                // El endpoint solo devuelve id_cliente, nombre, apellido y la lista de motivos.
+                // Adaptamos la tabla para mostrar estos datos, ignorando los campos numéricos
+                // que el endpoint de la tabla no proporciona (conteo, promedios, etc.)
+        
+                const row = `
+                    <tr>
+                        <td>${absoluteIndex}</td>
+                        <td class="small fw-bold">${c.id_cliente}</td>
+                        <td>${c.nombre} ${c.apellido}</td>
+                        <td colspan="4" class="text-center text-muted">
+                            <span class="badge bg-secondary">Datos calculados en backend, no disponibles en este listado</span>
+                        </td>
+                        <td>
+                            <ul class="list-unstyled mb-0 small">
+                                ${c.sospechoso_por.map(m => `<li><i class="bi bi-dot"></i> ${m}</li>`).join('')}
+                            </ul>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
         /**
          * Renderiza los controles de paginación del frontend.
          * @param {number} totalSuspicious - Número total de transacciones sospechosas en el lote actual.
@@ -457,9 +491,14 @@
                 transaccionesView.style.display = 'none';
                 clientesView.style.display = 'block';
                 document.getElementById('pagination').innerHTML = '';
-                document.getElementById('pagination-info').textContent = 'Seleccione una opción.';
-                //cargo los clientes
-                obtenerClientesSospechosos();
+                document.getElementById('pagination-info').textContent = 'Mostrando datos de clientes anómalos.';
+        
+                // Carga los clientes solo si aún no los tiene
+                if (allSuspiciousClients.length === 0) {
+                    obtenerClientesSospechosos(); 
+                } else {
+                    renderClientesTable(allSuspiciousClients); // Vuelve a renderizar si ya están cargados
+                }
             }
         }
 
