@@ -133,6 +133,14 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <!-- Controles de paginación -->
+                             <nav>
+                                <ul class="pagination justify-content-center" id="clientes-pagination">
+                                    <!-- Botones de paginación generados por JS -->
+                                </ul>
+                            </nav>
+                            <div id="clientes-pagination-info" class="text-center text-muted small mt-2"></div>
+
                             <div class="alert alert-info" role="alert">
                                 **¡Próxima Función!** El contenido de la tabla de clientes se cargará dinámicamente al seleccionar esta opción.
                             </div>
@@ -267,7 +275,7 @@
                 const suspiciousClients = await fetchWithBackoff(url);
                 // Almacenamos los datos en la variable global
                 allSuspiciousClients = suspiciousClients; 
-                renderClientesTable(allSuspiciousClients);
+                renderClientesTableAndPagination(allSuspiciousClients);
             } catch (error) {
                 console.error("Error al obtener los clientes:", error);
                 tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger fw-bold py-4">Error al cargar los datos de clientes. Revisa la consola para más detalles.</td></tr>`;
@@ -356,6 +364,87 @@
                 tbody.insertAdjacentHTML('beforeend', row);
             });
         }
+
+        function renderClientesTableAndPagination() {
+            const totalClientes = allSuspiciousClients.length;
+            const totalDisplayPages = Math.ceil(totalClientes / DISPLAY_LIMIT);
+
+            if (totalClientes === 0) {
+                const tbody = document.getElementById('clientes-tbody');
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-secondary py-4">No se encontraron clientes sospechosos.</td></tr>`;
+                return;
+            }
+
+            const start = (currentDisplayPage - 1) * DISPLAY_LIMIT;
+            const end = start + DISPLAY_LIMIT;
+            const clientesToShow = allSuspiciousClients.slice(start, end);
+
+            renderClientesTable(clientesToShow); // Reutiliza tu función existente
+
+            renderClientesPagination(totalClientes, totalDisplayPages);
+        }
+
+        function renderClientesPagination(totalClientes, totalDisplayPages) {
+            const paginationEl = document.getElementById('clientes-pagination');
+            const paginationInfoEl = document.getElementById('clientes-pagination-info');
+
+            paginationEl.innerHTML = '';
+
+            // Mostrar info de rango
+            const startDisplay = (currentDisplayPage - 1) * DISPLAY_LIMIT + 1;
+            const endDisplay = Math.min(startDisplay + DISPLAY_LIMIT - 1, totalClientes);
+            paginationInfoEl.textContent = `Mostrando clientes ${startDisplay}-${endDisplay} de ${totalClientes}.`;
+
+            // Crear botón helper
+            const createPageItem = (text, page, isActive = false, isDisabled = false) => {
+                const li = document.createElement('li');
+                li.className = `page-item ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`;
+
+                const a = document.createElement('a');
+                a.href = "#";
+                a.className = 'page-link';
+                a.textContent = text;
+                a.setAttribute('data-page', page);
+
+                if (!isDisabled) {
+                    a.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const newPage = parseInt(e.target.getAttribute('data-page'));
+                        if (newPage !== currentDisplayPage) {
+                            currentDisplayPage = newPage;
+                            renderClientesTableAndPagination();
+                        }
+                    });
+                }
+
+                li.appendChild(a);
+                return li;
+            };
+
+            // Botón Anterior
+            paginationEl.appendChild(createPageItem('Anterior', currentDisplayPage - 1, false, currentDisplayPage === 1));
+
+            // --- Aquí reemplazamos el loop por el límite de 5 botones ---
+            let startPage = Math.max(1, currentDisplayPage - 2);
+            let endPage = Math.min(totalDisplayPages, currentDisplayPage + 2);
+
+            if (currentDisplayPage <= 3) {
+                startPage = 1;
+                endPage = Math.min(totalDisplayPages, 5);
+            } else if (currentDisplayPage > totalDisplayPages - 2) {
+                startPage = Math.max(1, totalDisplayPages - 4);
+                endPage = totalDisplayPages;
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationEl.appendChild(createPageItem(i, i, i === currentDisplayPage));
+            }
+
+            // Botón Siguiente
+            paginationEl.appendChild(createPageItem('Siguiente', currentDisplayPage + 1, false, currentDisplayPage === totalDisplayPages));
+        }
+
+
         /**
          * Renderiza los controles de paginación del frontend.
          * @param {number} totalSuspicious - Número total de transacciones sospechosas en el lote actual.
