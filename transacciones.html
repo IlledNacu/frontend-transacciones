@@ -153,7 +153,6 @@
                     <th>Número de cajero</th>
                     <th>Tipo de transacción</th>
                     <th>Monto</th>
-                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody id="transacciones-tbody">
@@ -378,10 +377,6 @@
                     <td>${escapeHtml(t.id_cajero)}</td>
                     <td>${escapeHtml(t.tipo_nombre)}</td>
                     <td>${formatMonto(t.monto)}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
-                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                    </td>
                 `;
           tbody.appendChild(tr);
         });
