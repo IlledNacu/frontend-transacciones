@@ -143,6 +143,46 @@
             </main>
         </div>
     </div>
+    <!-- Modal Editar Cajero -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="editForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Editar Cajero</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Número de cajero</label>
+                            <input type="text" class="form-control" id="editId" readonly />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="editNombre" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ciudad</label>
+                            <input type="text" class="form-control" id="editCiudad" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Provincia</label>
+                            <input type="text" class="form-control" id="editProvincia" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">País</label>
+                            <input type="text" class="form-control" id="editPais" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -339,6 +379,88 @@
             }
         });
 
+        let editModal = new bootstrap.Modal(document.getElementById("editModal"));
+        let editForm = document.getElementById("editForm");
+
+        // Abrir modal de edición
+        document.addEventListener("click", (e) => {
+            if (e.target.closest(".btn-outline-primary")) {
+                const tr = e.target.closest("tr");
+                const id = tr.children[1].textContent.trim();
+                const nombre = tr.children[2].textContent.trim();
+                const ciudad = tr.children[3].textContent.trim();
+                const provincia = tr.children[4].textContent.trim();
+                const pais = tr.children[5].textContent.trim();
+
+                // Completar el modal
+                document.getElementById("editId").value = id;
+                document.getElementById("editNombre").value = nombre;
+                document.getElementById("editCiudad").value = ciudad;
+                document.getElementById("editProvincia").value = provincia;
+                document.getElementById("editPais").value = pais;
+
+                // Mostrar modal
+                editModal.show();
+            }
+        });
+
+        // Guardar cambios
+        editForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById("editId").value;
+            const nombre = document.getElementById("editNombre").value.trim();
+            const ciudad = document.getElementById("editCiudad").value.trim();
+            const provincia = document.getElementById("editProvincia").value.trim();
+            const pais = document.getElementById("editPais").value.trim();
+
+            const payload = { id, nombre, ciudad, provincia, pais };
+
+            try {
+                const res = await fetch(`${apiBase}/${id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+
+                if (res.ok) {
+                    alert("✅ Cajero actualizado correctamente.");
+                    editModal.hide();
+
+                    // Actualizar en memoria
+                    allCajeros = allCajeros.map((c) =>
+                        c.id == id ? { ...c, ...payload } : c
+                    );
+                    filteredCajeros = filteredCajeros.map((c) =>
+                        c.id == id ? { ...c, ...payload } : c
+                    );
+
+                    renderTable();
+                } else {
+                    const error = await res.json();
+
+                    // Mostrar el contenido legible
+                    console.error("Error al actualizar cajero:", error);
+
+                    let mensaje = "";
+                    if (typeof error === "string") {
+                        mensaje = error;
+                    } else if (error.detail) {
+                        mensaje = typeof error.detail === "string" ? error.detail : JSON.stringify(error.detail);
+                    } else {
+                        mensaje = JSON.stringify(error);
+                    }
+
+                    alert(`❌ Error al actualizar:\n${mensaje}`);
+
+                }
+            } catch (err) {
+                console.error(err);
+                alert("⚠️ Error al intentar actualizar el cajero.");
+            }
+        });
+
+
 
         // Calcular total de páginas
         function calculateTotalPages() {
@@ -378,9 +500,9 @@
                 document.getElementById(
                     "searchInfo"
                 ).innerHTML = `<i class="bi bi-info-circle"></i> Encontrados <strong>${filteredCajeros.length
-                    }</strong> resultado(s) para "<strong>${escapeHtml(
-                        searchQuery
-                    )}</strong>"`;
+                }</strong> resultado(s) para "<strong>${escapeHtml(
+                    searchQuery
+                )}</strong>"`;
             }
 
             // Resetear a página 1 y recalcular
