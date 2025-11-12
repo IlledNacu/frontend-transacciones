@@ -59,7 +59,6 @@
   <body>
     <div class="container-fluid">
       <div class="row">
-        <!-- Sidebar -->
         <nav class="col-md-2 d-none d-md-block sidebar p-3">
           <h4 class="text-white">Detector de anomalías</h4>
           <ul class="nav flex-column mt-4">
@@ -96,9 +95,7 @@
           </ul>
         </nav>
 
-        <!-- Main content -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-          <!-- Navbar -->
           <nav
             class="navbar navbar-expand-lg navbar-light bg-light my-3 rounded shadow-sm"
           >
@@ -107,7 +104,6 @@
             </div>
           </nav>
 
-          <!-- Buscador -->
           <div class="card shadow-sm mb-3">
             <div class="card-body">
               <div class="row g-2">
@@ -137,10 +133,9 @@
             </div>
           </div>
 
-          <!-- Tabla -->
           <div class="card shadow-sm">
-            <div class="card-header">
-              <i class="bi bi-table"></i> Todos los Registros
+            <div class="card-header bg-success text-white">
+              <i class="bi bi-cash-coin"></i> Todas las Transacciones
             </div>
             <div class="card-body">
               <table class="table table-hover">
@@ -153,18 +148,15 @@
                     <th>Número de cajero</th>
                     <th>Tipo de transacción</th>
                     <th>Monto</th>
-                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody id="transacciones-tbody">
-                  <!-- JS genera tabla -->
-                </tbody>
+                  </tbody>
               </table>
 
               <nav>
                 <ul class="pagination justify-content-center" id="pagination">
-                  <!-- JS genera botones -->
-                </ul>
+                  </ul>
               </nav>
             </div>
           </div>
@@ -209,48 +201,42 @@
 
       // Cargar TODOS las transacciones (una sola vez)
       async function loadAllTransacciones() {
-        if (isDataLoaded) return; // Si ya están cargados, no hacer nada
+        if (isDataLoaded) return; 
 
         try {
-          let totalRecords = 1000; // Valor por defecto para el límite
+          let totalRecords = 5000; // Valor de fallback
 
+          // Intentar obtener el total real de registros
           try {
-            // Intentar obtener el total de registros
             const countRes = await fetch(`${apiBase}/count`);
             if (countRes.ok) {
               const countData = await countRes.json();
-              // Manejar diferentes formatos de respuesta posibles
-              totalRecords =
-                countData.total || countData.count || countData.length || 1000;
+              if (typeof countData === 'number' && countData > 0) {
+                 totalRecords = countData;
+              } else if (countData.total && typeof countData.total === 'number') {
+                 totalRecords = countData.total;
+              }
               console.log(`Total de registros obtenido: ${totalRecords}`);
             } else {
               console.warn(
-                "Endpoint /count no disponible, usando valor por defecto"
+                "Endpoint /count no disponible o devolvió error, usando límite de 5000."
               );
             }
           } catch (countError) {
             console.warn(
-              "Error obteniendo conteo, usando valor por defecto:",
+              "Error obteniendo conteo, usando límite de 5000:",
               countError
             );
           }
 
-          // Ahora traemos TODOS los registros de una vez
+          // Ahora traemos TODOS los registros con el límite dinámico (totalRecords)
           console.log(`Solicitando ${totalRecords} registros...`);
           const res = await fetch(`${apiBase}/?skip=0&limit=${totalRecords}`);
 
           if (!res.ok) {
-            // Si falla con el límite grande, intentar con un límite más pequeño
-            console.warn(
-              "Primera solicitud fallida, intentando con límite más pequeño..."
+            throw new Error(
+                `Error al cargar datos: ${res.status} ${res.statusText}. Por favor, verifique el endpoint y los límites del backend.`
             );
-            const fallbackRes = await fetch(`${apiBase}/?skip=0&limit=500`);
-            if (!fallbackRes.ok) {
-              throw new Error(
-                `Error al cargar datos: ${fallbackRes.status} ${fallbackRes.statusText}`
-              );
-            }
-            allTransacciones = await fallbackRes.json();
           } else {
             allTransacciones = await res.json();
           }
@@ -274,7 +260,7 @@
         } catch (error) {
           console.error("Error cargando datos:", error);
           showError(
-            "No se pudieron cargar los datos. Verifique la conexión con el servidor."
+            "No se pudieron cargar los datos. Verifique la conexión con el servidor. " + error.message
           );
 
           // Mostrar datos de ejemplo en caso de error
@@ -378,10 +364,6 @@
                     <td>${escapeHtml(t.id_cajero)}</td>
                     <td>${escapeHtml(t.tipo_nombre)}</td>
                     <td>${formatMonto(t.monto)}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
-                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                    </td>
                 `;
           tbody.appendChild(tr);
         });

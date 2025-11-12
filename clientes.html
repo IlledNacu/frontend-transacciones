@@ -104,6 +104,14 @@
           >
             <div class="container-fluid">
               <a class="navbar-brand" href="#">Clientes</a>
+              <button
+                class="btn btn-success"
+                id="btnCrearCliente"
+                data-bs-toggle="modal"
+                data-bs-target="#editModal"
+              >
+                <i class="bi bi-plus-circle"></i> Crear Nuevo Cliente
+              </button>
             </div>
           </nav>
 
@@ -139,8 +147,8 @@
 
           <!-- Tabla -->
           <div class="card shadow-sm">
-            <div class="card-header">
-              <i class="bi bi-table"></i> Todos los Registros
+            <div class="card-header bg-primary text-white">
+              <i class="bi bi-people"></i> Todos los Clientes
             </div>
             <div class="card-body">
               <table class="table table-hover">
@@ -172,6 +180,64 @@
       </div>
     </div>
 
+    <!-- Modal Editar/Crear -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="editForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-people"></i> Cliente</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Número de cuenta (ID)</label>
+                            <input type="text" class="form-control" id="editId" required />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="editNombre" required />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="editApellido" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Género</label>
+                            <input type="text" class="form-control" id="editGenero" required />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de nacimiento</label>
+                            <input type="date" class="form-control" id="editFechaNacimiento" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ocupación</label>
+                            <input type="text" class="form-control" id="editOcupacion" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de cuenta</label>
+                            <select class="form-select" id="editTipoCuenta" required>
+                                <option value="" disabled>Seleccione...</option>
+                                <option value="Current">Current</option>
+                                <option value="Savings">Savings</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       const apiBase = "http://127.0.0.1:8000/clientes";
@@ -184,41 +250,51 @@
       let filteredClientes = []; // Datos filtrados por búsqueda
       let isSearching = false; // Flag para saber si hay búsqueda activa
       let isDataLoaded = false; // Flag para saber si ya cargamos todos los datos
+      let currentMode = 'create'; // Variable para saber en qué modo está el modal: 'create' o 'edit'
 
       // Cargar TODOS los clientes (una sola vez)
-      async function loadAllClientes() {
-        if (isDataLoaded) return; // Si ya están cargados, no hacer nada
+     async function loadAllClientes() {
+    if (isDataLoaded) return;
+
+    try {
+        let totalRecords = 5000; // Aumentar el límite por defecto a un valor más seguro
 
         try {
-          let totalRecords = 1000; // Valor por defecto para el límite
-
-          try {
-            // Intentar obtener el total de registros
+            // 💡 CORRECCIÓN: El endpoint devuelve un número, no un objeto.
             const countRes = await fetch(`${apiBase}/count`);
             if (countRes.ok) {
-              const countData = await countRes.json();
-              // Manejar diferentes formatos de respuesta posibles
-              totalRecords =
-                countData.total || countData.count || countData.length || 1000;
-              console.log(`Total de registros obtenido: ${totalRecords}`);
+                // Leer el valor como texto o intentar como JSON y verificar si es un número
+                const countText = await countRes.text();
+                const countNum = parseInt(countText);
+                
+                if (!isNaN(countNum) && countNum > 0) {
+                    totalRecords = countNum;
+                    console.log(`Total de registros obtenido: ${totalRecords}`);
+                } else {
+                    console.warn(
+                        "Endpoint /count disponible, pero devolvió un valor no numérico o cero. Usando valor por defecto."
+                    );
+                }
             } else {
-              console.warn(
-                "Endpoint /count no disponible, usando valor por defecto"
-              );
+                console.warn(
+                    "Endpoint /count no disponible, usando valor por defecto"
+                );
             }
-          } catch (countError) {
+        } catch (countError) {
             console.warn(
-              "Error obteniendo conteo, usando valor por defecto:",
-              countError
+                "Error obteniendo conteo, usando valor por defecto:",
+                countError
             );
-          }
+        }
 
-          // Ahora traemos TODOS los registros de una vez
-          console.log(`Solicitando ${totalRecords} registros...`);
-          const res = await fetch(`${apiBase}/?skip=0&limit=${totalRecords}`);
+        // Ahora traemos TODOS los registros de una vez
+        // Se le suma 1 para asegurarnos que traiga un registro más que el total por si el conteo es inexacto.
+        const limitToFetch = totalRecords + 1; 
+        console.log(`Solicitando ${limitToFetch} registros...`);
+        const res = await fetch(`${apiBase}/?skip=0&limit=${limitToFetch}`); 
 
-          if (!res.ok) {
-            // Si falla con el límite grande, intentar con un límite más pequeño
+        if (!res.ok) {
+             // Si falla con el límite grande, intenta con uno más pequeño como fallback
             console.warn(
               "Primera solicitud fallida, intentando con límite más pequeño..."
             );
@@ -233,23 +309,23 @@
             allClientes = await res.json();
           }
 
-          filteredClientes = [...allClientes]; // Por defecto, mostrar todos
-          isDataLoaded = true;
+        filteredClientes = [...allClientes]; // Por defecto, mostrar todos
+        isDataLoaded = true;
 
-          console.log(`✅ Cargados ${allClientes.length} clientes en memoria`);
-        } catch (error) {
-          console.error("Error cargando datos:", error);
-          showError(
+        console.log(`✅ Cargados ${allClientes.length} clientes en memoria`);
+    } catch (error) {
+        console.error("Error cargando datos:", error);
+        showError(
             "No se pudieron cargar los datos. Verifique la conexión con el servidor."
-          );
+        );
 
-          // Mostrar datos de ejemplo en caso de error
-          allClientes = getSampleData();
-          filteredClientes = [...allClientes];
-          isDataLoaded = true;
-          console.log("Usando datos de ejemplo debido al error");
-        }
-      }
+        // Mostrar datos de ejemplo en caso de error
+        allClientes = getSampleData();
+        filteredClientes = [...allClientes];
+        isDataLoaded = true;
+        console.log("Usando datos de ejemplo debido al error");
+    }
+}
 
       // Datos de ejemplo para cuando la API falle
       function getSampleData() {
@@ -311,44 +387,60 @@
         ];
       }
 
+      // Función para actualizar cliente en memoria
+      function updateFrontendData(id, newClienteData) {
+          allClientes = allClientes.map((c) =>
+              c.id == id ? { ...c, ...newClienteData } : c
+          );
+          filteredClientes = filteredClientes.map((c) =>
+              c.id == id ? { ...c, ...newClienteData } : c
+          );
+          renderTable();
+      }
+      
+      // Función para añadir cliente en memoria
+      function addFrontendData(newCliente) {
+          allClientes.unshift(newCliente); 
+          if (isSearching) {
+              performSearch(); 
+          } else {
+              filteredClientes.unshift(newCliente);
+          }
+          calculateTotalPages();
+          currentPage = 1;
+          renderTable();
+          renderPagination();
+      }
+
       // Renderizar tabla con datos filtrados
       function renderTable() {
         const tbody = document.getElementById("clientes-tbody");
         tbody.innerHTML = "";
 
-        // Calcular índices para la paginación actual
         const startIndex = (currentPage - 1) * pageSize;
         const endIndex = startIndex + pageSize;
         const pageData = filteredClientes.slice(startIndex, endIndex);
 
         if (pageData.length === 0) {
-          tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" class="text-center text-muted p-4">
-                            <i class="bi bi-inbox fs-1"></i>
-                            <p class="mb-0 mt-2">No se encontraron resultados</p>
-                        </td>
-                    </tr>
-                `;
-          return;
+             tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted p-4"><i class="bi bi-inbox fs-1"></i><p class="mb-0 mt-2">No se encontraron resultados</p></td></tr>`;
+             return;
         }
 
         pageData.forEach((c, i) => {
           const tr = document.createElement("tr");
           const globalIndex = startIndex + i + 1;
           tr.innerHTML = `
-                    <td>${globalIndex}</td>
-                    <td>${escapeHtml(c.id)}</td>
-                    <td>${escapeHtml(c.apellido)}, ${escapeHtml(c.nombre)}</td>
-                    <td>${escapeHtml(c.genero)}</td>
-                    <td>${escapeHtml(c.fecha_nacimiento)}</td>
-                    <td>${escapeHtml(c.ocupacion)}</td>
-                    <td>${escapeHtml(c.tipo_cuenta)}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
-                        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                    </td>
-                `;
+            <td>${globalIndex}</td>
+            <td data-id="${escapeHtml(c.id)}">${escapeHtml(c.id)}</td>
+            <td>${escapeHtml(c.apellido)}, ${escapeHtml(c.nombre)}</td>
+            <td>${escapeHtml(c.genero)}</td>
+            <td>${escapeHtml(c.fecha_nacimiento)}</td>
+            <td>${escapeHtml(c.ocupacion)}</td>
+            <td>${escapeHtml(c.tipo_cuenta)}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary edit-btn" data-bs-toggle="modal" data-bs-target="#editModal"><i class="bi bi-pencil"></i></button>
+            </td>
+          `;
           tbody.appendChild(tr);
         });
       }
@@ -567,6 +659,159 @@
         renderTable();
         renderPagination();
       })();
+    </script>
+    <script>
+      let editModal = new bootstrap.Modal(document.getElementById("editModal"));
+      let editForm = document.getElementById("editForm");
+      let modalTitle = document.querySelector("#editModal .modal-title");
+      let btnGuardar = document.getElementById("btnGuardar");
+      
+      // Campos del formulario
+      const fields = {
+          id: document.getElementById("editId"),
+          nombre: document.getElementById("editNombre"),
+          apellido: document.getElementById("editApellido"),
+          genero: document.getElementById("editGenero"),
+          fecha_nacimiento: document.getElementById("editFechaNacimiento"),
+          ocupacion: document.getElementById("editOcupacion"),
+          tipo_cuenta: document.getElementById("editTipoCuenta")
+      };
+      
+      const readOnlyFields = [fields.nombre, fields.apellido, fields.genero, fields.fecha_nacimiento];
+
+      // 🆕 1. Abrir modal para CREAR
+      document.getElementById("btnCrearCliente").addEventListener("click", () => {
+          currentMode = 'create';
+          modalTitle.innerHTML = '<i class="bi bi-plus-circle"></i> Crear Nuevo Cliente';
+          btnGuardar.textContent = 'Crear Cliente';
+          editForm.reset(); 
+          fields.id.removeAttribute("readonly"); // ID editable para creación
+          fields.id.focus();
+          // Habilitar todos los campos para la creación
+          Object.values(fields).forEach(field => field.removeAttribute("readonly"));
+      });
+
+      // ✏️ 2. Abrir modal para EDITAR
+      document.addEventListener("click", (e) => {
+          if (e.target.closest(".edit-btn")) {
+              const tr = e.target.closest("tr");
+              const idCell = tr.querySelector('td[data-id]');
+              const id = idCell ? idCell.getAttribute('data-id') : null;
+
+              if (!id) {
+                  showError("No se pudo obtener el ID del cliente para editar.");
+                  return;
+              }
+              
+              const cliente = filteredClientes.find(c => c.id == id);
+              if (!cliente) return;
+              
+              currentMode = 'edit';
+              modalTitle.innerHTML = `<i class="bi bi-pencil-square"></i> Editar Cliente: ${escapeHtml(cliente.apellido)}, ${escapeHtml(cliente.nombre)}`;
+              btnGuardar.textContent = 'Guardar Cambios';
+
+              // Llenar campos
+              fields.id.value = cliente.id;
+              fields.nombre.value = cliente.nombre;
+              fields.apellido.value = cliente.apellido;
+              fields.genero.value = cliente.genero;
+              fields.fecha_nacimiento.value = cliente.fecha_nacimiento;
+              fields.ocupacion.value = cliente.ocupacion;
+              fields.tipo_cuenta.value = cliente.tipo_cuenta;
+
+              // Restringir edición: Solo ID es readonly, los demás se rellenan.
+              fields.id.setAttribute("readonly", true);
+              
+              // Hacemos que solo ocupacion y tipo_cuenta sean editables.
+              readOnlyFields.forEach(field => field.setAttribute("readonly", true));
+              fields.ocupacion.removeAttribute("readonly");
+              fields.tipo_cuenta.removeAttribute("readonly");
+          }
+      });
+
+      // 💾 3. Manejador de SUBMIT (Crear o Editar)
+      editForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const id = fields.id.value.trim();
+        const url = `${apiBase}${currentMode === 'create' ? '/' : `/${id}`}`;
+        const method = currentMode === 'create' ? 'POST' : 'PUT';
+
+        let payload = {};
+        
+        if (currentMode === 'create') {
+            // Carga completa para creación (POST)
+            payload = { 
+                id: id,
+                nombre: fields.nombre.value.trim(),
+                apellido: fields.apellido.value.trim(),
+                genero: fields.genero.value.trim(),
+                fecha_nacimiento: fields.fecha_nacimiento.value,
+                ocupacion: fields.ocupacion.value.trim(),
+                tipo_cuenta: fields.tipo_cuenta.value
+            };
+        } else {
+            // Solo campos editables para actualización (PUT)
+            payload = {
+                ocupacion: fields.ocupacion.value.trim(),
+                tipo_cuenta: fields.tipo_cuenta.value
+            };
+        }
+
+        try {
+            const res = await fetch(url, {
+                method: method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+
+            if (res.ok) {
+                const updatedData = await res.json();
+                alert(`✅ Cliente ${id} ${currentMode === 'create' ? 'creado' : 'actualizado'} correctamente.`);
+                editModal.hide();
+
+                if (currentMode === 'create') {
+                    addFrontendData(updatedData);
+                } else {
+                    // Solo actualizamos los campos que el backend haya cambiado (ocupacion, tipo_cuenta)
+                    updateFrontendData(id, {ocupacion: updatedData.ocupacion, tipo_cuenta: updatedData.tipo_cuenta});
+                }
+
+            } else {
+                // 🛑 CORRECCIÓN: Manejo de errores 
+                const error = await res.json();
+                console.error(`Error al ${currentMode}:`, error);
+
+                let mensaje;
+                // Intentamos extraer el 'detail' si es un error HTTP normal
+                if (error.detail) {
+                    if (typeof error.detail === 'string') {
+                        mensaje = error.detail;
+                    } else if (Array.isArray(error.detail)) {
+                        // Si es un error de validación de Pydantic, formateamos la lista de errores
+                        mensaje = error.detail.map(err => 
+                            `${err.loc.join('.')}: ${err.msg}`
+                        ).join('\n');
+                    } else {
+                        // Fallback para otros formatos de detalle
+                        mensaje = JSON.stringify(error.detail, null, 2);
+                    }
+                } else if (typeof error === 'string') {
+                    mensaje = error;
+                } else {
+                    // Último fallback si el error no tiene formato conocido
+                    mensaje = JSON.stringify(error, null, 2);
+                }
+                
+                // Usamos la función showError para una mejor visualización (si la tienes definida)
+                // O si solo usas alert:
+                alert(`❌ Error al ${currentMode === 'create' ? 'crear' : 'actualizar'}:\n${mensaje}`);
+            }
+        } catch (err) {
+            console.error(err);
+            alert(`⚠️ Error de red al intentar ${currentMode === 'create' ? 'crear' : 'actualizar'} el cliente.`);
+        }
+    });
     </script>
   </body>
 </html>

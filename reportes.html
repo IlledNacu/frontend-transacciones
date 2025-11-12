@@ -3,10 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Reporte de Transacciones Sospechosas</title>
-    <!-- Bootstrap CSS -->
+    <title>Reporte de Clientes Sospechosos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -14,7 +12,6 @@
   <body>
     <div class="container-fluid">
       <div class="row">
-        <!-- Sidebar (Col-md-2) -->
         <nav class="col-md-2 d-none d-md-block sidebar p-3">
           <h4 class="text-white">Detector de anomalías</h4>
           <ul class="nav flex-column mt-4">
@@ -50,86 +47,16 @@
             </li>
           </ul>
         </nav>
-        <!-- Main content -->
-
-        <!-- Main content (Col-md-9 ms-sm-auto col-lg-10) -->
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-          <!-- Navbar de contenido principal -->
           <nav
             class="navbar navbar-expand-lg navbar-light bg-light my-3 rounded shadow-sm"
           >
             <div class="container-fluid">
-              <a class="navbar-brand" href="#">Reportes</a>
+              <a class="navbar-brand" href="#">Reporte de Clientes Sospechosos</a>
             </div>
           </nav>
 
-          <!-- NUEVOS BOTONES DE VISTA (Transacciones / Clientes) -->
-          <div class="d-flex justify-content-start mb-4">
-            <div class="btn-group" role="group" id="view-toggle-buttons">
-              <input
-                type="radio"
-                class="btn-check"
-                name="view-radio"
-                id="view-transacciones"
-                autocomplete="off"
-                checked
-              />
-              <label class="btn btn-outline-primary" for="view-transacciones"
-                >Transacciones Sospechosas</label
-              >
-
-              <input
-                type="radio"
-                class="btn-check"
-                name="view-radio"
-                id="view-clientes"
-                autocomplete="off"
-              />
-              <label class="btn btn-outline-primary" for="view-clientes"
-                >Clientes Sospechosos</label
-              >
-            </div>
-          </div>
-
-          <!-- Buscador para Transacciones -->
-          <div id="transacciones-search" class="card shadow-sm mb-3">
-            <div class="card-body">
-              <div class="row g-2">
-                <div class="col-md-10">
-                  <div class="input-group">
-                    <span class="input-group-text"
-                      ><i class="bi bi-search"></i
-                    ></span>
-                    <input
-                      type="text"
-                      id="searchInputTransacciones"
-                      class="form-control"
-                      placeholder="Buscar en transacciones por ID, cliente, cajero, monto, fecha o motivo..."
-                    />
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <button
-                    id="btnLimpiarTransacciones"
-                    class="btn btn-outline-secondary w-100"
-                  >
-                    <i class="bi bi-x-circle"></i> Limpiar
-                  </button>
-                </div>
-              </div>
-              <small
-                id="searchInfoTransacciones"
-                class="text-muted mt-2 d-block"
-              ></small>
-            </div>
-          </div>
-
-          <!-- Buscador para Clientes -->
-          <div
-            id="clientes-search"
-            class="card shadow-sm mb-3"
-            style="display: none"
-          >
+          <div id="clientes-search" class="card shadow-sm mb-3">
             <div class="card-body">
               <div class="row g-2">
                 <div class="col-md-10">
@@ -161,53 +88,9 @@
             </div>
           </div>
 
-          <!-- Contenedor de Vista de Transacciones -->
-          <div id="transacciones-view">
-            <!-- Card para la Tabla de Transacciones -->
+          <div id="clientes-view">
             <div class="card shadow-sm">
-              <div class="card-header bg-primary text-white">
-                <i class="bi bi-table"></i> Transacciones Anómalas Detectadas
-              </div>
-              <div class="card-body">
-                <div class="table-responsive">
-                  <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                      <tr>
-                        <th>#</th>
-                        <th>ID Transacción</th>
-                        <th>Cliente</th>
-                        <th>ID Cajero</th>
-                        <th>Monto</th>
-                        <th>Fecha y Hora</th>
-                        <th>Score Anomalia</th>
-                        <th>Sospechosa Por</th>
-                      </tr>
-                    </thead>
-                    <tbody id="transacciones-tbody">
-                      <!-- Filas generadas por JavaScript -->
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- Controles de Paginación -->
-                <nav>
-                  <ul class="pagination justify-content-center" id="pagination">
-                    <!-- Botones de paginación generados por JavaScript -->
-                  </ul>
-                </nav>
-                <div
-                  id="pagination-info"
-                  class="text-center text-muted small mt-2"
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Contenedor de Vista de Clientes (Placeholder) -->
-          <div id="clientes-view" style="display: none">
-            <!-- Card para la Tabla de Clientes -->
-            <div class="card shadow-sm">
-              <div class="card-header bg-success text-white">
+              <div class="card-header bg-danger text-white">
                 <i class="bi bi-people"></i> Clientes con Mayor Riesgo
               </div>
               <div class="card-body">
@@ -219,21 +102,20 @@
                         <th>ID Cliente</th>
                         <th>Nombre del Cliente</th>
                         <th>Sospechoso Por</th>
+                        <th>Transacciones</th>
                       </tr>
                     </thead>
                     <tbody id="clientes-tbody">
-                      <!-- Filas generadas por JavaScript -->
+                      <tr><td colspan="4" class="text-center text-secondary py-4">Cargando clientes sospechosos...</td></tr>
                     </tbody>
                   </table>
                 </div>
-                <!-- Controles de paginación -->
                 <nav>
                   <ul
                     class="pagination justify-content-center"
                     id="clientes-pagination"
                   >
-                    <!-- Botones de paginación generados por JS -->
-                  </ul>
+                    </ul>
                 </nav>
                 <div
                   id="clientes-pagination-info"
@@ -246,91 +128,24 @@
       </div>
     </div>
 
-    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-      // Configuración de la API y paginación
+      // Configuración de la API
       const API_BASE_URL = "http://127.0.0.1:8000/anomalias";
-      const API_ENDPOINT = "/transacciones_sospechosas";
       const API_CLIENTES = "/clientes_sospechosos";
+      const API_TRANSACCIONES_CLIENTE = "/transacciones_por_cliente";
 
       // LÍMITES
-      const API_LIMIT = 5000;
       const DISPLAY_LIMIT = 10;
 
       // ESTADO GLOBAL
-      let allSuspiciousTransactions = [];
       let allSuspiciousClients = [];
-      let currentDisplayPage = 1;
       let currentClientesPage = 1;
 
       // Variables para búsqueda en frontend
-      let filteredTransactions = [];
       let filteredClients = [];
-      let isDataLoadedTransacciones = false;
       let isDataLoadedClientes = false;
-
-      // Función para cargar todas las transacciones sospechosas
-      async function loadAllTransacciones() {
-        if (isDataLoadedTransacciones) return;
-
-        try {
-          let totalRecords = 5000; // Valor por defecto
-
-          try {
-            // Intentar obtener el total de registros
-            const countRes = await fetch(`${API_BASE_URL}/cantidad_transacciones_sospechosas`);
-            if (countRes.ok) {
-              const countData = await countRes.json();
-              totalRecords =
-                countData.total || countData.count || countData.length || 5000;
-              console.log(`Total de registros obtenido: ${totalRecords}`);
-            } else {
-              console.warn(
-                "Endpoint /count no disponible, usando valor por defecto"
-              );
-            }
-          } catch (countError) {
-            console.warn(
-              "Error obteniendo conteo, usando valor por defecto:",
-              countError
-            );
-          }
-
-          // Cargar todas las transacciones
-          const url = `${API_BASE_URL}${API_ENDPOINT}?skip=0&limit=${totalRecords}`;
-          const response = await fetch(url);
-
-          if (!response.ok) {
-            throw new Error(
-              `Error al cargar datos: ${response.status} ${response.statusText}`
-            );
-          }
-
-          allSuspiciousTransactions = await response.json();
-          filteredTransactions = [...allSuspiciousTransactions];
-          isDataLoadedTransacciones = true;
-
-          console.log(
-            `✅ Cargadas ${allSuspiciousTransactions.length} transacciones sospechosas en memoria`
-          );
-
-          // Renderizar la tabla
-          renderTransaccionesTableAndPagination();
-        } catch (error) {
-          console.error("Error cargando transacciones:", error);
-          showError(
-            "No se pudieron cargar las transacciones sospechosas. Verifique la conexión con el servidor."
-          );
-
-          // Mostrar datos de ejemplo en caso de error
-          allSuspiciousTransactions = getSampleTransacciones();
-          filteredTransactions = [...allSuspiciousTransactions];
-          isDataLoadedTransacciones = true;
-          renderTransaccionesTableAndPagination();
-        }
-      }
 
       // Función para cargar todos los clientes sospechosos
       async function loadAllClientes() {
@@ -370,68 +185,7 @@
         }
       }
 
-      // Datos de ejemplo para transacciones
-      function getSampleTransacciones() {
-        return [
-          {
-            id: "T001",
-            fecha_hora: "2024-01-15 10:30:00",
-            id_cliente: "C001",
-            nombre: "Juan",
-            apellido: "Pérez",
-            id_cajero: "CAJ01",
-            monto: 500.0,
-            score_anomalia: 0.95,
-            sospechosa_por: ["Monto muy alto", "Horario inusual"],
-          },
-          {
-            id: "T002",
-            fecha_hora: "2024-01-15 11:15:00",
-            id_cliente: "C002",
-            nombre: "María",
-            apellido: "González",
-            id_cajero: "CAJ02",
-            monto: 1200.0,
-            score_anomalia: 0.87,
-            sospechosa_por: ["Frecuencia inusual"],
-          },
-          {
-            id: "T003",
-            fecha_hora: "2024-01-15 14:45:00",
-            id_cliente: "C003",
-            nombre: "Carlos",
-            apellido: "López",
-            id_cajero: "CAJ01",
-            monto: 300.0,
-            score_anomalia: 0.72,
-            sospechosa_por: ["Ubicación sospechosa"],
-          },
-          {
-            id: "T004",
-            fecha_hora: "2024-01-16 09:20:00",
-            id_cliente: "C001",
-            nombre: "Juan",
-            apellido: "Pérez",
-            id_cajero: "CAJ03",
-            monto: 200.0,
-            score_anomalia: 0.65,
-            sospechosa_por: ["Patrón repetitivo"],
-          },
-          {
-            id: "T005",
-            fecha_hora: "2024-01-16 12:30:00",
-            id_cliente: "C004",
-            nombre: "Ana",
-            apellido: "Martínez",
-            id_cajero: "CAJ02",
-            monto: 800.0,
-            score_anomalia: 0.58,
-            sospechosa_por: ["Monto inusual"],
-          },
-        ];
-      }
-
-      // Datos de ejemplo para clientes
+      // Datos de ejemplo para clientes (MANTENIDA)
       function getSampleClientes() {
         return [
           {
@@ -468,54 +222,6 @@
             ],
           },
         ];
-      }
-
-      // Búsqueda en transacciones
-      function performSearchTransacciones() {
-        const searchQuery = document
-          .getElementById("searchInputTransacciones")
-          .value.trim()
-          .toLowerCase();
-
-        if (!searchQuery) {
-          filteredTransactions = [...allSuspiciousTransactions];
-          document.getElementById("searchInfoTransacciones").innerHTML = "";
-        } else {
-          filteredTransactions = allSuspiciousTransactions.filter(
-            (transaccion) => {
-              return (
-                transaccion.id.toLowerCase().includes(searchQuery) ||
-                (transaccion.nombre &&
-                  transaccion.nombre.toLowerCase().includes(searchQuery)) ||
-                (transaccion.apellido &&
-                  transaccion.apellido.toLowerCase().includes(searchQuery)) ||
-                (transaccion.id_cliente &&
-                  transaccion.id_cliente.toLowerCase().includes(searchQuery)) ||
-                (transaccion.id_cajero &&
-                  transaccion.id_cajero.toLowerCase().includes(searchQuery)) ||
-                (transaccion.monto &&
-                  transaccion.monto.toString().includes(searchQuery)) ||
-                (transaccion.fecha_hora &&
-                  transaccion.fecha_hora.toLowerCase().includes(searchQuery)) ||
-                (transaccion.sospechosa_por &&
-                  transaccion.sospechosa_por.some((motivo) =>
-                    motivo.toLowerCase().includes(searchQuery)
-                  ))
-              );
-            }
-          );
-
-          document.getElementById(
-            "searchInfoTransacciones"
-          ).innerHTML = `<i class="bi bi-info-circle"></i> Encontradas <strong>${
-            filteredTransactions.length
-          }</strong> transacción(es) sospechosa(s) para "<strong>${escapeHtml(
-            searchQuery
-          )}</strong>"`;
-        }
-
-        currentDisplayPage = 1;
-        renderTransaccionesTableAndPagination();
       }
 
       // Búsqueda en clientes
@@ -556,39 +262,10 @@
         renderClientesTableAndPagination();
       }
 
-      // Limpiar búsqueda de transacciones
-      function clearSearchTransacciones() {
-        document.getElementById("searchInputTransacciones").value = "";
-        performSearchTransacciones();
-      }
-
       // Limpiar búsqueda de clientes
       function clearSearchClientes() {
         document.getElementById("searchInputClientes").value = "";
         performSearchClientes();
-      }
-
-      // Renderizar tabla de transacciones con paginación
-      function renderTransaccionesTableAndPagination() {
-        const totalSuspicious = filteredTransactions.length;
-        const totalDisplayPages = Math.ceil(totalSuspicious / DISPLAY_LIMIT);
-
-        if (totalSuspicious === 0) {
-          const tbody = document.getElementById("transacciones-tbody");
-          tbody.innerHTML = `<tr><td colspan="8" class="text-center text-secondary py-4">No se encontraron transacciones sospechosas.</td></tr>`;
-          document.getElementById("pagination").innerHTML = "";
-          document.getElementById(
-            "pagination-info"
-          ).textContent = `Mostrando 0 resultados`;
-          return;
-        }
-
-        const start = (currentDisplayPage - 1) * DISPLAY_LIMIT;
-        const end = start + DISPLAY_LIMIT;
-        const transactionsToShow = filteredTransactions.slice(start, end);
-
-        renderTransaccionesTable(transactionsToShow, start);
-        renderTransaccionesPagination(totalSuspicious, totalDisplayPages);
       }
 
       // Renderizar tabla de clientes con paginación
@@ -598,7 +275,7 @@
 
         if (totalClientes === 0) {
           const tbody = document.getElementById("clientes-tbody");
-          tbody.innerHTML = `<tr><td colspan="8" class="text-center text-secondary py-4">No se encontraron clientes sospechosos.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="4" class="text-center text-secondary py-4">No se encontraron clientes sospechosos.</td></tr>`;
           document.getElementById("clientes-pagination").innerHTML = "";
           document.getElementById(
             "clientes-pagination-info"
@@ -614,53 +291,6 @@
         renderClientesPagination(totalClientes, totalDisplayPages);
       }
 
-      // Renderizar tabla de transacciones
-      function renderTransaccionesTable(transactions, startOffset) {
-        const tbody = document.getElementById("transacciones-tbody");
-        tbody.innerHTML = "";
-
-        transactions.forEach((t, index) => {
-          const absoluteIndex = startOffset + index + 1;
-          const scorePercentage = (t.score_anomalia * 100).toFixed(2);
-
-          let scoreClass = "text-success";
-          if (t.score_anomalia >= 0.75) {
-            scoreClass = "text-danger fw-bold";
-          } else if (t.score_anomalia >= 0.5) {
-            scoreClass = "text-warning";
-          }
-
-          const row = `
-                    <tr>
-                        <td>${absoluteIndex}</td>
-                        <td class="small">${escapeHtml(t.id)}</td>
-                        <td>${escapeHtml(t.nombre)} ${escapeHtml(
-            t.apellido
-          )} <span class="text-muted small">(${escapeHtml(
-            t.id_cliente
-          )})</span></td>
-                        <td>${escapeHtml(t.id_cajero)}</td>
-                        <td class="fw-bold">$${escapeHtml(t.monto)}</td>
-                        <td>${formatDateTime(t.fecha_hora)}</td>
-                        <td class="${scoreClass}">${scorePercentage}%</td>
-                        <td>
-                            <ul class="list-unstyled mb-0 small">
-                                ${t.sospechosa_por
-                                  .map(
-                                    (m) =>
-                                      `<li><i class="bi bi-dot"></i> ${escapeHtml(
-                                        m
-                                      )}</li>`
-                                  )
-                                  .join("")}
-                            </ul>
-                        </td>
-                    </tr>
-                `;
-          tbody.insertAdjacentHTML("beforeend", row);
-        });
-      }
-
       // Renderizar tabla de clientes
       function renderClientesTable(clients, startOffset) {
         const tbody = document.getElementById("clientes-tbody");
@@ -669,6 +299,9 @@
         clients.forEach((c, index) => {
           const absoluteIndex = startOffset + index + 1;
 
+          // Creamos la URL para la nueva página de detalle
+          const detailUrl = `transacciones_cliente.html?id_cliente=${c.id_cliente}&nombre=${c.nombre}&apellido=${c.apellido}`; // <-- NUEVA URL
+          
           const row = `
                     <tr>
                         <td>${absoluteIndex}</td>
@@ -690,101 +323,19 @@
                         .join("")}
                   </ul>
               </td>
+              <td><a class="icon-link icon-link-hover text-success" 
+                  href="${detailUrl}"
+                  title="Ver todas las transacciones de este cliente y el detalle de anomalías">
+                Ver transacciones del cliente
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                </svg>
+                </a>
+              </td>
           </tr>
           `;
           tbody.insertAdjacentHTML("beforeend", row);
         });
-      }
-
-      // Renderizar paginación de transacciones
-      function renderTransaccionesPagination(
-        totalSuspicious,
-        totalDisplayPages
-      ) {
-        const paginationEl = document.getElementById("pagination");
-        const paginationInfoEl = document.getElementById("pagination-info");
-        paginationEl.innerHTML = "";
-
-        const startDisplay = (currentDisplayPage - 1) * DISPLAY_LIMIT + 1;
-        const endDisplay = Math.min(
-          startDisplay + DISPLAY_LIMIT - 1,
-          totalSuspicious
-        );
-        paginationInfoEl.textContent = `Mostrando resultados ${startDisplay} - ${endDisplay} de ${totalSuspicious} transacciones sospechosas`;
-
-        if (totalDisplayPages <= 1) {
-          return;
-        }
-
-        const createPageItem = (
-          text,
-          page,
-          isActive = false,
-          isDisabled = false
-        ) => {
-          const li = document.createElement("li");
-          li.className = `page-item ${isActive ? "active" : ""} ${
-            isDisabled ? "disabled" : ""
-          }`;
-
-          const a = document.createElement("a");
-          a.href = "#";
-          a.className = "page-link";
-          a.textContent = text;
-          a.setAttribute("data-page", page);
-
-          if (!isDisabled) {
-            a.addEventListener("click", (e) => {
-              e.preventDefault();
-              const newPage = parseInt(e.target.getAttribute("data-page"));
-              if (newPage !== currentDisplayPage) {
-                currentDisplayPage = newPage;
-                renderTransaccionesTableAndPagination();
-              }
-            });
-          }
-
-          li.appendChild(a);
-          return li;
-        };
-
-        // Botón Anterior
-        paginationEl.appendChild(
-          createPageItem(
-            "Anterior",
-            currentDisplayPage - 1,
-            false,
-            currentDisplayPage === 1
-          )
-        );
-
-        // Paginación de 5 botones centrada
-        let startPage = Math.max(1, currentDisplayPage - 2);
-        let endPage = Math.min(totalDisplayPages, currentDisplayPage + 2);
-
-        if (currentDisplayPage <= 3) {
-          endPage = Math.min(totalDisplayPages, 5);
-          startPage = 1;
-        } else if (currentDisplayPage > totalDisplayPages - 3) {
-          startPage = Math.max(1, totalDisplayPages - 4);
-          endPage = totalDisplayPages;
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-          paginationEl.appendChild(
-            createPageItem(i, i, i === currentDisplayPage)
-          );
-        }
-
-        // Botón Siguiente
-        paginationEl.appendChild(
-          createPageItem(
-            "Siguiente",
-            currentDisplayPage + 1,
-            false,
-            currentDisplayPage === totalDisplayPages
-          )
-        );
       }
 
       // Renderizar paginación de clientes
@@ -877,7 +428,7 @@
         );
       }
 
-      // Formatear fecha y hora
+      // Funciones de utilidad (Mantener)
       function formatDateTime(dateTimeString) {
         const options = {
           year: "numeric",
@@ -890,7 +441,6 @@
         return date.toLocaleDateString("es-ES", options);
       }
 
-      // Escapar HTML para prevenir XSS
       function escapeHtml(text) {
         if (text === null || text === undefined) return "";
         const div = document.createElement("div");
@@ -898,7 +448,6 @@
         return div.innerHTML;
       }
 
-      // Mostrar errores
       function showError(message) {
         const existingAlerts = document.querySelectorAll(".alert");
         existingAlerts.forEach((alert) => alert.remove());
@@ -919,76 +468,8 @@
         }, 8000);
       }
 
-      // Cambiar entre vistas
-      function switchView(viewName) {
-        const transaccionesView = document.getElementById("transacciones-view");
-        const clientesView = document.getElementById("clientes-view");
-        const transaccionesSearch = document.getElementById(
-          "transacciones-search"
-        );
-        const clientesSearch = document.getElementById("clientes-search");
-
-        if (viewName === "transacciones") {
-          transaccionesView.style.display = "block";
-          clientesView.style.display = "none";
-          transaccionesSearch.style.display = "block";
-          clientesSearch.style.display = "none";
-
-          if (!isDataLoadedTransacciones) {
-            loadAllTransacciones();
-          } else {
-            renderTransaccionesTableAndPagination();
-          }
-        } else if (viewName === "clientes") {
-          transaccionesView.style.display = "none";
-          clientesView.style.display = "block";
-          transaccionesSearch.style.display = "none";
-          clientesSearch.style.display = "block";
-
-          if (!isDataLoadedClientes) {
-            loadAllClientes();
-          } else {
-            renderClientesTableAndPagination();
-          }
-        }
-      }
-
       // Inicializar listeners
       function initViewListeners() {
-        document
-          .getElementById("view-transacciones")
-          .addEventListener("change", () => switchView("transacciones"));
-        document
-          .getElementById("view-clientes")
-          .addEventListener("change", () => switchView("clientes"));
-
-        // Event listeners para búsqueda de transacciones
-        document
-          .getElementById("searchInputTransacciones")
-          .addEventListener("keyup", (e) => {
-            if (e.key === "Enter") {
-              performSearchTransacciones();
-            }
-            if (e.key === "Escape") {
-              clearSearchTransacciones();
-            }
-          });
-
-        document
-          .getElementById("btnLimpiarTransacciones")
-          .addEventListener("click", clearSearchTransacciones);
-
-        // Búsqueda en tiempo real con debounce
-        let searchTimeoutTransacciones;
-        document
-          .getElementById("searchInputTransacciones")
-          .addEventListener("input", () => {
-            clearTimeout(searchTimeoutTransacciones);
-            searchTimeoutTransacciones = setTimeout(() => {
-              performSearchTransacciones();
-            }, 400);
-          });
-
         // Event listeners para búsqueda de clientes
         document
           .getElementById("searchInputClientes")
@@ -1020,8 +501,7 @@
       // Inicialización de la aplicación
       window.onload = () => {
         initViewListeners();
-        // Cargar transacciones por defecto
-        loadAllTransacciones();
+        loadAllClientes();
       };
     </script>
   </body>
