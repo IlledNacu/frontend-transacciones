@@ -253,39 +253,48 @@
       let currentMode = 'create'; // Variable para saber en qué modo está el modal: 'create' o 'edit'
 
       // Cargar TODOS los clientes (una sola vez)
-      async function loadAllClientes() {
-        if (isDataLoaded) return; // Si ya están cargados, no hacer nada
+     async function loadAllClientes() {
+    if (isDataLoaded) return;
+
+    try {
+        let totalRecords = 5000; // Aumentar el límite por defecto a un valor más seguro
 
         try {
-          let totalRecords = 1000; // Valor por defecto para el límite
-
-          try {
-            // Intentar obtener el total de registros
+            // 💡 CORRECCIÓN: El endpoint devuelve un número, no un objeto.
             const countRes = await fetch(`${apiBase}/count`);
             if (countRes.ok) {
-              const countData = await countRes.json();
-              // Manejar diferentes formatos de respuesta posibles
-              totalRecords =
-                countData.total || countData.count || countData.length || 1000;
-              console.log(`Total de registros obtenido: ${totalRecords}`);
+                // Leer el valor como texto o intentar como JSON y verificar si es un número
+                const countText = await countRes.text();
+                const countNum = parseInt(countText);
+                
+                if (!isNaN(countNum) && countNum > 0) {
+                    totalRecords = countNum;
+                    console.log(`Total de registros obtenido: ${totalRecords}`);
+                } else {
+                    console.warn(
+                        "Endpoint /count disponible, pero devolvió un valor no numérico o cero. Usando valor por defecto."
+                    );
+                }
             } else {
-              console.warn(
-                "Endpoint /count no disponible, usando valor por defecto"
-              );
+                console.warn(
+                    "Endpoint /count no disponible, usando valor por defecto"
+                );
             }
-          } catch (countError) {
+        } catch (countError) {
             console.warn(
-              "Error obteniendo conteo, usando valor por defecto:",
-              countError
+                "Error obteniendo conteo, usando valor por defecto:",
+                countError
             );
-          }
+        }
 
-          // Ahora traemos TODOS los registros de una vez
-          console.log(`Solicitando ${totalRecords} registros...`);
-          const res = await fetch(`${apiBase}/?skip=0&limit=${totalRecords}`);
+        // Ahora traemos TODOS los registros de una vez
+        // Se le suma 1 para asegurarnos que traiga un registro más que el total por si el conteo es inexacto.
+        const limitToFetch = totalRecords + 1; 
+        console.log(`Solicitando ${limitToFetch} registros...`);
+        const res = await fetch(`${apiBase}/?skip=0&limit=${limitToFetch}`); 
 
-          if (!res.ok) {
-            // Si falla con el límite grande, intentar con un límite más pequeño
+        if (!res.ok) {
+             // Si falla con el límite grande, intenta con uno más pequeño como fallback
             console.warn(
               "Primera solicitud fallida, intentando con límite más pequeño..."
             );
@@ -300,23 +309,23 @@
             allClientes = await res.json();
           }
 
-          filteredClientes = [...allClientes]; // Por defecto, mostrar todos
-          isDataLoaded = true;
+        filteredClientes = [...allClientes]; // Por defecto, mostrar todos
+        isDataLoaded = true;
 
-          console.log(`✅ Cargados ${allClientes.length} clientes en memoria`);
-        } catch (error) {
-          console.error("Error cargando datos:", error);
-          showError(
+        console.log(`✅ Cargados ${allClientes.length} clientes en memoria`);
+    } catch (error) {
+        console.error("Error cargando datos:", error);
+        showError(
             "No se pudieron cargar los datos. Verifique la conexión con el servidor."
-          );
+        );
 
-          // Mostrar datos de ejemplo en caso de error
-          allClientes = getSampleData();
-          filteredClientes = [...allClientes];
-          isDataLoaded = true;
-          console.log("Usando datos de ejemplo debido al error");
-        }
-      }
+        // Mostrar datos de ejemplo en caso de error
+        allClientes = getSampleData();
+        filteredClientes = [...allClientes];
+        isDataLoaded = true;
+        console.log("Usando datos de ejemplo debido al error");
+    }
+}
 
       // Datos de ejemplo para cuando la API falle
       function getSampleData() {
